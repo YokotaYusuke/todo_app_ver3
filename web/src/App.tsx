@@ -1,35 +1,60 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import {useEffect, useState} from 'react'
+import TodoRepository, {DefaultTodoRepository} from './repository/TodoRepository.tsx'
 
-function App() {
-  const [count, setCount] = useState(0)
+interface AppProps {
+    todoRepository?: TodoRepository
+}
 
-  return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+function App(
+    {todoRepository = new DefaultTodoRepository()}: AppProps
+) {
+
+    const {
+        draftText,
+        setDraftText,
+        saveButtonClick,
+        todoList
+    } = useApp(todoRepository)
+
+    return (
+        <>
+            <label>
+                新規TODO
+                <input type="text" value={draftText} onChange={(event) => setDraftText(event.target.value)}/>
+            </label>
+            <button onClick={saveButtonClick}>保存</button>
+            <div role="todoList">
+                {todoList.map((todo) => (
+                    <div key={window.crypto.randomUUID()}>{todo}</div>
+                ))}
+            </div>
+        </>
+    )
+}
+
+function useApp(todoRepository: TodoRepository) {
+
+    const [draftText, setDraftText] = useState<string>('')
+    const [todoList, setTodoList] = useState<string[]>([])
+
+    useEffect(() => {
+            todoRepository.getTodo()
+                .then(todos => setTodoList(todos))
+        }
+        , [])
+
+    function saveButtonClick() {
+        todoRepository.saveTodo(draftText)
+        setTodoList([...todoList, draftText])
+        setDraftText('')
+    }
+
+    return {
+        draftText,
+        setDraftText,
+        saveButtonClick,
+        todoList
+    }
 }
 
 export default App
