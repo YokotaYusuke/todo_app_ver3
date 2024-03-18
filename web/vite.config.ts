@@ -9,5 +9,10 @@ export default defineConfig({
     globals: true,
     environment: "happy-dom",
     setupFiles: 'src/tests/setupTests.ts',
+  },
+  server: {
+    proxy: {
+      '/api': 'http://localhost:8080'
+    }
   }
 })
